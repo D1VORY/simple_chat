@@ -1,0 +1,14 @@
+
+body{
+  background-color: #e8e8e8;
+}
+
+.main-content{
+  padding-top: 80px;
+}
+
+.bottom-content{
+  display: flex;
+  justify-content:  center;
+
+}
