@@ -121,6 +121,7 @@ img {
 
 .msg_history {
 	height: 70vh;
-	overflow: auto;
-	display: inline-block
+	overflow-y: auto;
+	overflow-x: hidden;
+
 }
