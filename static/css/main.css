@@ -120,7 +120,7 @@ img {
 }
 
 .msg_history {
-	height: 400px;
+	height: 70vh;
 	overflow: auto;
 	display: inline-block
 }

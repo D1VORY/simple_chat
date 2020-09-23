@@ -9,6 +9,8 @@ verify_ssl = true
 django = "*"
 django-environ = "*"
 psycopg2 = "*"
+channels = "*"
+channels-redis = "*"
 
 [requires]
 python_version = "3.6"
