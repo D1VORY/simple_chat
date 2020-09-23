@@ -42,10 +42,13 @@
 
 
 {% block js %}
+{{ request.user.username|json_script:"user_username" }}
+
 <script>
     //scroll to msost recent messeges
      document.querySelector('.msg_history').lastChild.previousSibling.scrollIntoView(false);
-     //console.log(document.querySelector('.msg_history').lastChild.previousSibling);
+
+     const current_user = JSON.parse(document.getElementById('user_username').textContent);
 
      const chatSocket = new WebSocket(
          'ws://'
@@ -53,6 +56,7 @@
          + '/ws/chat/'
      );
 
+     // add outgoing message to DOM
      addOutgoingMsg = (data) => {
        let history =  document.querySelector('.msg_history')
 
@@ -66,11 +70,30 @@
         history.lastChild.scrollIntoView(false);
      }
 
+     // add incoming message to DOM
+     addIncomingMsg = (data) => {
+        let history =  document.querySelector('.msg_history')
+        history.insertAdjacentHTML('beforeend',
+         `<div class="incoming_msg">
+          <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+          <div class="received_msg">
+              <div class="received_withd_msg">
+                <p>${data.text}</p>
+                <span class="time_date"> ${data.timestamp}</span></div>
+          </div>
+         </div>`
+        )
+        history.lastChild.scrollIntoView(false);
+     }
+
      chatSocket.onmessage = function(e) {
-         const data = JSON.parse(e.data);
-
-         addOutgoingMsg(data)
-
+        const data = JSON.parse(e.data);
+        
+        if (data.sender === current_user) {
+          addOutgoingMsg(data)
+        } else {
+            addIncomingMsg(data)
+        }
      };
 
      chatSocket.onclose = function(e) {
