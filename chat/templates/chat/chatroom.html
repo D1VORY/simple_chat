@@ -1,4 +1,5 @@
 {% extends 'chat/app_base.html' %}
+{% load static %}
 
 {% block content %}
 
@@ -8,24 +9,9 @@
 
         <div class="mesgs">
           <div class="msg_history">
-            {% for message in messages%}
-              {% if message.sender == request.user %}
-              <div class="outgoing_msg">
-                <div class="sent_msg">
-                  <p>{{message.text}}</p>
-                  <span class="time_date">{{message.timestamp}}</span> </div>
-              </div>
-              {% else %}
-              <div class="incoming_msg">
-               <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
-               <div class="received_msg">
-                   <div class="received_withd_msg">
-                     <p>{{message.text}}</p>
-                     <span class="time_date"> {{message.timestamp}}</span></div>
-               </div>
-              </div>
-              {% endif%}
-            {% endfor %}
+            <div class="dummy">
+
+            </div>
 
           </div>
           <div class="type_msg">
@@ -43,80 +29,71 @@
 
 {% block js %}
 {{ request.user.username|json_script:"user_username" }}
+<script type="text/javascript" src="{% static "js/sockets.js" %}"></script>
 
 <script>
     //scroll to msost recent messeges
-     document.querySelector('.msg_history').lastChild.previousSibling.scrollIntoView(false);
 
-     const current_user = JSON.parse(document.getElementById('user_username').textContent);
 
-     const chatSocket = new WebSocket(
-         'ws://'
-         + window.location.host
-         + '/ws/chat/'
-     );
+    let cursor_next_url = null
+    let waitingFromAPI = false
 
-     // add outgoing message to DOM
-     addOutgoingMsg = (data) => {
-       let history =  document.querySelector('.msg_history')
+    // get the messeges from API
+    async function loadMessages(url){
+      console.log(url);
+      waitingFromAPI = true;
+      if (url){
+        let response = await fetch(url);
+        const myJson = await response.json();
+        cursor_next_url = myJson.next
+        waitingFromAPI = false;
 
-       history.insertAdjacentHTML('beforeend',
-         `<div class="outgoing_msg">
-           <div class="sent_msg">
-             <p>${data.text}</p>
-             <span class="time_date">${data.timestamp}</span> </div>
-         </div>`
-        )
-        history.lastChild.scrollIntoView(false);
-     }
+        return myJson.results
 
-     // add incoming message to DOM
-     addIncomingMsg = (data) => {
-        let history =  document.querySelector('.msg_history')
-        history.insertAdjacentHTML('beforeend',
-         `<div class="incoming_msg">
-          <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
-          <div class="received_msg">
-              <div class="received_withd_msg">
-                <p>${data.text}</p>
-                <span class="time_date"> ${data.timestamp}</span></div>
-          </div>
-         </div>`
-        )
-        history.lastChild.scrollIntoView(false);
-     }
+      }else {
+        return []
+      }
 
-     chatSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        
-        if (data.sender === current_user) {
-          addOutgoingMsg(data)
+    }
+
+    //appends a bunch of messages to DOM
+    function appendMessagesToDOM(messages){
+      for (var i = 0; i < messages.length ; i++) {
+        if (messages[i].sender === current_user) {
+          addOutgoingMsg(messages[i])
         } else {
-            addIncomingMsg(data)
+          addIncomingMsg(messages[i])
         }
-     };
+      }
+      document.querySelector(".msg_history").childNodes[9].scrollIntoView()
+    }
 
-     chatSocket.onclose = function(e) {
-         console.error('Chat socket closed unexpectedly');
-     };
 
-     document.querySelector('#chat-message-input').focus();
-     document.querySelector('#chat-message-input').onkeyup = function(e) {
-         if (e.keyCode === 13) {  // enter, return
-             document.querySelector('#chat-message-submit').click();
-         }
-     };
 
-     document.querySelector('#chat-message-submit').onclick = function(e) {
-         const messageInputDom = document.querySelector('#chat-message-input');
-         const message = messageInputDom.value;
-         if (message){
-           chatSocket.send(JSON.stringify({
-               'message': message
-           }));
-           messageInputDom.value = '';
-         }
+     loadMessages('http://127.0.0.1:8000/api/messages/').then(res  => {
 
-     };
+        appendMessagesToDOM(res)
+     }).catch(err => {
+       console.log(err);
+     })
+     //
+
+     //document.querySelector('.msg_history').lastChild.previousSibling.scrollIntoView(false);
+     let history = document.querySelector('.msg_history')
+
+     //load new messges when scroll
+     history.addEventListener('scroll', (el) => {
+       if(history.scrollTop  < 5 && !waitingFromAPI){
+         loadMessages(cursor_next_url).then(res  => {
+
+            appendMessagesToDOM(res)
+         }).catch(err => {
+           console.log(err);
+         })
+       }
+
+     })
+
+
  </script>
 {% endblock %}

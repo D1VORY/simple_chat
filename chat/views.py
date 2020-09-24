@@ -1,18 +1,42 @@
 from django.shortcuts import render, redirect
-from .models import Message
-
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+
+from rest_framework import generics,serializers
+from rest_framework.pagination import CursorPagination
+
 from .decorators import unauthenticated_user
 from .forms import CreateUserForm
-from django.contrib.auth.decorators import login_required
+from .models import Message
+
 
 @login_required(login_url='login/')
 def index(request):
     template = 'chat/chatroom.html'
-    messages = reversed(Message.objects.all().order_by('-timestamp'))
-    return render(request, template, context = {'messages':messages})
+    #messages = Message.objects.all().order_by('timestamp')
+    return render(request, template)
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = serializers.CharField(source='sender.username')
+    class Meta:
+        model = Message
+        fields = ['text', 'timestamp','sender']
+
+
+class MessagePagination(CursorPagination):
+    page_size= 10
+    page_size_query_param = 'page_size'
+    ordering = '-timestamp'
+
+
+class MessagesListView(generics.ListAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    pagination_class = MessagePagination
 
 
 @unauthenticated_user
