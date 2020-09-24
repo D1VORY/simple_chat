@@ -8,12 +8,14 @@ const chatSocket = new WebSocket(
 // add outgoing message to DOM
 function addOutgoingMsg(data, position = 'afterbegin'){
   let history =  document.querySelector('.msg_history')
+  let timestamp = position == 'beforeend' ? data.timestamp : transformtimestamp(data.timestamp)
+
   //console.log(history);
   history.insertAdjacentHTML(position,
     `<div class="outgoing_msg">
       <div class="sent_msg">
         <p>${data.text}</p>
-        <span class="time_date">${data.timestamp}</span> </div>
+        <span class="time_date">${timestamp}</span> </div>
     </div>`
    )
    // if it is called from websocket
@@ -26,13 +28,15 @@ function addOutgoingMsg(data, position = 'afterbegin'){
 // add incoming message to DOM
 function addIncomingMsg(data, position = 'afterbegin') {
    let history =  document.querySelector('.msg_history')
+     let timestamp = position == 'beforeend' ? data.timestamp : transformtimestamp(data.timestamp)
    history.insertAdjacentHTML(position,
     `<div class="incoming_msg">
      <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
      <div class="received_msg">
+          <p class="text-primary">${data.sender} </p>
          <div class="received_withd_msg">
            <p>${data.text}</p>
-           <span class="time_date"> ${data.timestamp}</span></div>
+           <span class="time_date"> ${timestamp}</span></div>
      </div>
     </div>`
    )
@@ -74,3 +78,13 @@ document.querySelector('#chat-message-submit').onclick = function(e) {
     }
 
 };
+
+
+function transformtimestamp(date_str){
+  var date = new Date(date_str.replace('T', ' '));
+  const month = date.toLocaleString('default', { month: 'long' }).substr(0,3)
+  const day = date.getDate()
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  return `${day} ${month} | ${hours}:${minutes}`
+}

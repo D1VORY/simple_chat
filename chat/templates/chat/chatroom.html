@@ -32,7 +32,7 @@
 <script type="text/javascript" src="{% static "js/sockets.js" %}"></script>
 
 <script>
-    //scroll to msost recent messeges
+
 
 
     let cursor_next_url = null
@@ -81,7 +81,7 @@
      //document.querySelector('.msg_history').lastChild.previousSibling.scrollIntoView(false);
      let history = document.querySelector('.msg_history')
 
-     //load new messges when scroll
+     //load new messges on scroll
      history.addEventListener('scroll', (el) => {
        if(history.scrollTop  < 5 && !waitingFromAPI){
          loadMessages(cursor_next_url).then(res  => {
@@ -95,5 +95,6 @@
      })
 
 
+  
  </script>
 {% endblock %}
