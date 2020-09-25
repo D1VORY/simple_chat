@@ -36,15 +36,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
+        print('receive is called!')
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.send_to_group(text_data_json))
 
+
+    async def send_to_group(self, text_data_json):
         #waiting for sending delayed message
         if 'sendDateTime' in text_data_json:
             sendDateTime = datetime.fromtimestamp(text_data_json['sendDateTime']/1000.0).replace(tzinfo=None)
             now = timezone.localtime().replace(tzinfo=None)
-
             total =  (sendDateTime-now).total_seconds()
             await asyncio.sleep(total)
-
 
         message = await self.save_message_to_db(text_data_json['message'])
         # Send message to room group
