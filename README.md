@@ -8,3 +8,8 @@
 ```
 The project should start at local server http://127.0.0.1:8000/ 
 
+If current postgres proccess interfere,you could try stop postgres on your local machine:
+```bash
+  sudo service postgresql stop
+```
+
