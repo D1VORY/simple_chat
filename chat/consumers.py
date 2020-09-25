@@ -2,6 +2,9 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+import asyncio
+from datetime import datetime,timedelta
+from django.utils import timezone
 from .models import Message
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -33,8 +36,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message_text = text_data_json['message']
-        message = await self.save_message_to_db(message_text)
+
+        #waiting for sending delayed message
+        if 'sendDateTime' in text_data_json:
+            sendDateTime = datetime.fromtimestamp(text_data_json['sendDateTime']/1000.0).replace(tzinfo=None)
+            now = timezone.localtime().replace(tzinfo=None)
+
+            total =  (sendDateTime-now).total_seconds()
+            await asyncio.sleep(total)
+
+
+        message = await self.save_message_to_db(text_data_json['message'])
         # Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name,
