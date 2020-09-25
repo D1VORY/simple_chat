@@ -36,7 +36,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1',env("HOST_NAME"), env("HOST_NAME_ALT")]
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -86,7 +86,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [('redis', 6379)],
         },
     },
 }
@@ -98,8 +98,8 @@ DATABASES = {
         'ENGINE':'django.db.backends.postgresql_psycopg2',
         "NAME": env("DB_MAIN_NAME"),
         "USER": env("DB_MAIN_USER"),
-        "HOST": env("DB_MAIN_HOST"),
-        "PORT": env("DB_MAIN_PORT"),
+        "HOST": 'pg',
+        "PORT": 5432,
         "PASSWORD": env("DB_MAIN_PASSWORD"),
     }
 }

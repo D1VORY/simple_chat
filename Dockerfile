@@ -9,8 +9,12 @@ RUN mkdir /code
 WORKDIR /code
 
 
-COPY Pipfile /code/
-COPY Pipfile.lock /code/
-RUN pip install pipenv
-RUN pipenv install --deploy --system
+#COPY Pipfile /code/
+#COPY Pipfile.lock /code/
+#RUN pip install pipenv
+#RUN pipenv install  --system
+
+COPY requirements.txt  /code/
+RUN pip install -r requirements.txt
+
 COPY . /code/
